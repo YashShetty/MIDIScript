@@ -1,2 +1,2 @@
-# MIDIScript
-Contains files useful for MIDI development
+# Apps
+Contains applications I have developed
