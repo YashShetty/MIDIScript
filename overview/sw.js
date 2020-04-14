@@ -1,82 +1,57 @@
-"use strict";
+// This is the "Offline page" service worker
 
-// CODELAB: Update cache names any time any of the cached files change.
-const CACHE_NAME = "static-cache-v2";
-const DATA_CACHE_NAME = "data-cache-v1";
+const CACHE = "static-cache-v2";
 
-// CODELAB: Add list of files to cache here.
-const FILES_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./scripts/app.js",
-  "./scripts/install.js"
-  "./styles/style.css"
-];
+// TODO: replace the following with the correct offline fallback page i.e.: const offlineFallbackPage = "offline.html";
+const offlineFallbackPage = "/offline";
 
-self.addEventListener("install", evt => {
-  console.log("[ServiceWorker] Install");
-  // CODELAB: Precache static resources here.
-  evt.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log("[ServiceWorker] Pre-caching offline page");
-      return cache.addAll(FILES_TO_CACHE);
-    },e => {
-      console.log("errorA:" + e);
-    }).catch(e => {
-      console.log("errorB:" + e);
+// Install stage sets up the offline page in the cache and opens a new cache
+self.addEventListener("install", function (event) {
+  console.log("[Service Worker] Install Event processing");
+
+  event.waitUntil(
+    caches.open(CACHE).then(function (cache) {
+      console.log("[Service Worker] Cached offline page during install");
+
+      /*if (offlineFallbackPage === "/offline.html") {
+        return cache.add(new Response("/offline.html"));
+      }*/
+
+      return cache.add(offlineFallbackPage);
     })
   );
-
-  self.skipWaiting();
 });
 
-self.addEventListener("activate", evt => {
-  console.log("[ServiceWorker] Activate");
-  // CODELAB: Remove previous cached data from disk.
-  evt.waitUntil(
-    caches.keys().then(keyList => {
-      return Promise.all(
-        keyList.map(key => {
-          if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
-            console.log("[ServiceWorker] Removing old cache", key);
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
+// If any fetch fails, it will show the offline page.
+self.addEventListener("fetch", function (event) {
+  if (event.request.method !== "GET") return;
 
-  self.clients.claim();
-});
+  event.respondWith(
+    fetch(event.request).catch(function (error) {
+      // The following validates that the request was for a navigation to a new document
+      if (
+        event.request.destination !== "document" ||
+        event.request.mode !== "navigate"
+      ) {
+        return;
+      }
 
-self.addEventListener("fetch", evt => {
-  console.log("[ServiceWorker] Fetch", evt.request.url);
-  // CODELAB: Add fetch event handler here.
-  if (evt.request.url.includes("/MIDIScript/forecast/")) {
-    console.log("[Service Worker] Fetch (data)", evt.request.url);
-    evt.respondWith(
-      caches.open(DATA_CACHE_NAME).then(cache => {
-        return fetch(evt.request)
-          .then(response => {
-            // If the response was good, clone it and store it in the cache.
-            if (response.status === 200) {
-              cache.put(evt.request.url, response.clone());
-            }
-            return response;
-          })
-          .catch(err => {
-            // Network request failed, try to get it from the cache.
-            return cache.match(evt.request);
-          });
-      })
-    );
-    return;
-  }
-  evt.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.match(evt.request).then(response => {
-        return response || fetch(evt.request);
+      console.error("[Service Worker] Network request Failed. Serving offline page " + error);
+      return caches.open(CACHE).then(function (cache) {
+        return cache.match(offlineFallbackPage);
       });
     })
   );
+});
+
+// This is an event that can be fired from your page to tell the SW to update the offline page
+self.addEventListener("refreshOffline", function () {
+  const offlinePageRequest = new Request(offlineFallbackPage);
+
+  return fetch(offlineFallbackPage).then(function (response) {
+    return caches.open(CACHE).then(function (cache) {
+      console.log("[Service Worker] Offline page updated from refreshOffline event: " + response.url);
+      return cache.put(offlinePageRequest, response);
+    });
+  });
 });
