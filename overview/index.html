@@ -1,6 +1,9 @@
 <!DOCTYPE>
 <html>
-<head></head>
+<head>
+  <script src="jsrsasign-all-min.js"></script>
+  <script src="script.js"></script>
+</head>
 <body>
   <div class="text-center">
     <h1 id="heading"></h1>
@@ -8,8 +11,6 @@
     <a id="install"><button style="display:none;" id="butInstall">Install</button></a>
     <span id="load">Loading...</span>
     <noscript>To install apps, you need javascript enabled</noscript>
-
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
 
 <script async defer src="https://apis.google.com/js/api.js"
@@ -17,7 +18,7 @@
       onreadystatechange="if (this.readyState === 'complete') this.onload()">
     </script>
 
-<script src="~/js/overview.js"></script>
+<script src="overview.js"></script>
 
 </body>
 </html>
