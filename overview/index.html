@@ -2,11 +2,22 @@
 <html>
 <head></head>
 <body>
-  <h1>Overview</h1>
-  <hr>
-  <h2 id="heading">MIDIScript</h2>
-  <p id="description">An application to edit MIDI files using a BASIC like language. Available as Windows, Chrome and Electron</p>
-  <br>
-  <button id="install">Install</button>
+  <div class="text-center">
+    <h1 id="heading"></h1>
+    <p id="description"></p>
+    <a id="install"><button style="display:none;" id="butInstall">Install</button></a>
+    <span id="load">Loading...</span>
+    <noscript>To install apps, you need javascript enabled</noscript>
+
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+
+<script src="~/js/overview.js"></script>
+
 </body>
 </html>
